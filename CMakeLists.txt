@@ -10,6 +10,7 @@ endif()
 
 project(YAML_CPP VERSION 0.8.0 LANGUAGES CXX)
 
+message("${BUILD_SHARED_LIBS} ${CMAKE_SOURCE_DIR} ${PROJECT_SOURCE_DIR} ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_LIBDIR}/cmake/yaml-cpp")
 set(YAML_CPP_MAIN_PROJECT OFF)
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(YAML_CPP_MAIN_PROJECT ON)
@@ -29,6 +30,7 @@ option(YAML_CPP_FORMAT_SOURCE "Format source" ${YAML_CPP_MAIN_PROJECT})
 option(YAML_CPP_DISABLE_UNINSTALL  "Disable uninstallation of yaml-cpp" OFF)
 option(YAML_USE_SYSTEM_GTEST "Use system googletest if found" OFF)
 option(YAML_ENABLE_PIC "Use Position-Independent Code " ON)
+option(YAML_CPP_CUSTOM_INSTALL "custom install" OFF)
 
 cmake_dependent_option(YAML_CPP_BUILD_TESTS
   "Enable yaml-cpp tests" OFF
@@ -38,6 +40,10 @@ cmake_dependent_option(YAML_MSVC_SHARED_RT
   "CMAKE_SYSTEM_NAME MATCHES Windows" OFF)
 set(YAML_CPP_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/yaml-cpp"
   CACHE STRING "Path to install the CMake package to")
+if(YAML_CPP_CUSTOM_INSTALL)
+  set(YAML_CPP_CUSTOM_INSTALL_CMAKEDIR "${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_LIBDIR}/cmake/yaml-cpp"
+          CACHE STRING "Path to install the CMake package to")
+endif ()
  
 if (YAML_CPP_FORMAT_SOURCE)
     find_program(YAML_CPP_CLANG_FORMAT_EXE NAMES clang-format)
@@ -156,6 +162,13 @@ configure_package_config_file(
   "${PROJECT_BINARY_DIR}/yaml-cpp-config.cmake"
   INSTALL_DESTINATION "${YAML_CPP_INSTALL_CMAKEDIR}"
   PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR)
+if(YAML_CPP_CUSTOM_INSTALL)
+  configure_package_config_file(
+          "${PROJECT_SOURCE_DIR}/yaml-cpp-config.cmake.in"
+          "${PROJECT_BINARY_DIR}/yaml-cpp-config.cmake"
+          INSTALL_DESTINATION "${YAML_CPP_CUSTOM_INSTALL_CMAKEDIR}"
+          PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR)
+endif ()
 unset(EXPORT_TARGETS)
 
 write_basic_package_version_file(
@@ -182,6 +195,26 @@ if (YAML_CPP_INSTALL)
     DESTINATION "${YAML_CPP_INSTALL_CMAKEDIR}")
   install(FILES "${PROJECT_BINARY_DIR}/yaml-cpp.pc"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
+
+if (YAML_CPP_CUSTOM_INSTALL)
+  install(TARGETS yaml-cpp
+          EXPORT yaml-cpp-targets
+          RUNTIME DESTINATION ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_BINDIR}
+          LIBRARY DESTINATION ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_LIBDIR})
+  install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+          DESTINATION ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_INCLUDEDIR}
+          FILES_MATCHING PATTERN "*.h")
+  install(EXPORT yaml-cpp-targets
+          NAMESPACE yaml-cpp::
+          DESTINATION "${YAML_CPP_CUSTOM_INSTALL_CMAKEDIR}")
+  install(FILES
+          "${PROJECT_BINARY_DIR}/yaml-cpp-config.cmake"
+          "${PROJECT_BINARY_DIR}/yaml-cpp-config-version.cmake"
+          DESTINATION "${YAML_CPP_CUSTOM_INSTALL_CMAKEDIR}")
+  install(FILES "${PROJECT_BINARY_DIR}/yaml-cpp.pc"
+          DESTINATION ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 endif()
 
 if(YAML_CPP_BUILD_TESTS)
