@@ -10,7 +10,7 @@ endif()
 
 project(YAML_CPP VERSION 0.8.0 LANGUAGES CXX)
 
-message("${BUILD_SHARED_LIBS} ${CMAKE_SOURCE_DIR} ${PROJECT_SOURCE_DIR} ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_LIBDIR}/cmake/yaml-cpp")
+#message("${BUILD_SHARED_LIBS} ${CMAKE_SOURCE_DIR} ${PROJECT_SOURCE_DIR} ${yaml_cpp_custom_install_dir}/${CMAKE_INSTALL_LIBDIR}/cmake/yaml-cpp")
 set(YAML_CPP_MAIN_PROJECT OFF)
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(YAML_CPP_MAIN_PROJECT ON)
